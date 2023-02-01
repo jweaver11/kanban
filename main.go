@@ -15,6 +15,7 @@ type status int
 
 const divisor = 4
 
+// Three incrementing variables for the columns
 const (
 	todo status = iota
 	inProgress
@@ -24,6 +25,7 @@ const (
 /* MODEL MANAGEMENT */
 var models []tea.Model
 
+// incrementing model and form as int
 const (
 	model status = iota
 	form
@@ -42,18 +44,19 @@ var (
 			Foreground(lipgloss.Color("241"))
 )
 
-/* CUSTOM ITEM */
-
+// Sets the task struct layout for the task on todo list
 type Task struct {
 	status      status
 	title       string
 	description string
 }
 
+// Function that returns the new task
 func NewTask(status status, title, description string) Task {
 	return Task{status: status, title: title, description: description}
 }
 
+// Function used for controlling arrow keys to navigate correctly
 func (t *Task) Next() {
 	if t.status == done {
 		t.status = todo
@@ -76,7 +79,6 @@ func (t Task) Description() string {
 }
 
 /* MAIN MODEL */
-
 type Model struct {
 	loaded   bool
 	focused  status
@@ -85,10 +87,12 @@ type Model struct {
 	quitting bool
 }
 
+// Creates a new model
 func New() *Model {
 	return &Model{}
 }
 
+// Moves task using 'enter' to the right
 func (m *Model) MoveToNext() tea.Msg {
 	selectedItem := m.lists[m.focused].SelectedItem()
 	selectedTask := selectedItem.(Task)
@@ -98,6 +102,7 @@ func (m *Model) MoveToNext() tea.Msg {
 	return nil
 }
 
+// Helper function to delete selected task
 func (m *Model) DeleteCurrent() tea.Msg {
 	if len(m.lists[m.focused].VisibleItems()) > 0 {
 		selectedTask := m.lists[m.focused].SelectedItem().(Task)
@@ -106,6 +111,7 @@ func (m *Model) DeleteCurrent() tea.Msg {
 	return nil
 }
 
+// Helper Movment function if selected task is on edge of lists
 func (m *Model) Next() {
 	if m.focused == done {
 		m.focused = todo
@@ -114,6 +120,7 @@ func (m *Model) Next() {
 	}
 }
 
+// Helper Movment function if selected task is on edge of lists
 func (m *Model) Prev() {
 	if m.focused == todo {
 		m.focused = done
@@ -122,6 +129,7 @@ func (m *Model) Prev() {
 	}
 }
 
+// Initializes three lists with their tasks
 func (m *Model) initLists(width, height int) {
 	defaultList := list.New([]list.Item{}, list.NewDefaultDelegate(), width/divisor, height/2)
 	defaultList.SetShowHelp(false)
@@ -146,10 +154,12 @@ func (m *Model) initLists(width, height int) {
 	})
 }
 
+// Initialize helper
 func (m Model) Init() tea.Cmd {
 	return nil
 }
 
+// Adds in key commands to navigate UI and update what is shown to user
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -188,6 +198,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+// Renders for user to view the UI
 func (m Model) View() string {
 	if m.quitting {
 		return ""
@@ -239,15 +250,18 @@ func NewForm(focused status) *Form {
 	return form
 }
 
+// Uses helper function to actually create the new task?
 func (m Form) CreateTask() tea.Msg {
 	task := NewTask(m.focused, m.title.Value(), m.description.Value())
 	return task
 }
 
+// Initialize function?
 func (m Form) Init() tea.Cmd {
 	return nil
 }
 
+// Updates the UI in accordance with model?
 func (m Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
@@ -275,10 +289,12 @@ func (m Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 }
 
+// Formats Vertical view of the tasks using lipgloss
 func (m Form) View() string {
 	return lipgloss.JoinVertical(lipgloss.Left, m.title.View(), m.description.View())
 }
 
+// Main function that runs the program
 func main() {
 	models = []tea.Model{New(), NewForm(todo)}
 	m := models[model]
