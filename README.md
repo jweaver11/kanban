@@ -1,2 +1,2 @@
-# SSH-Kanban-CLI
+# kanban
 First time creating a Kanban board with bubble tea
